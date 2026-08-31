@@ -15,11 +15,20 @@ public class PG {
     private String name;
     private String address;
     private String city;
+
     private Double rent;
     private Integer availableRooms;
     private String gender;
     private String description;
     private String amenities;
+
+    // Location
+    private Double latitude;
+    private Double longitude;
+
+    // Additional information
+    private String phone;
+    private String type;
 
     public PG() {
     }
@@ -94,5 +103,37 @@ public class PG {
 
     public void setAmenities(String amenities) {
         this.amenities = amenities;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
