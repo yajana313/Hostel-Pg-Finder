@@ -3,6 +3,7 @@ package com.pgfinder.pg_service.service;
 import com.pgfinder.pg_service.entity.PG;
 import com.pgfinder.pg_service.repository.PGRepository;
 import com.pgfinder.pg_service.external.OverpassService;
+import com.pgfinder.pg_service.external.LocationService;
 import com.pgfinder.pg_service.dto.HostelDTO;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +15,16 @@ public class PGService {
 
     private final PGRepository pgRepository;
     private final OverpassService overpassService;
+    private final LocationService locationService;
 
-    public PGService(PGRepository pgRepository,
-                     OverpassService overpassService) {
+    public PGService(
+            PGRepository pgRepository,
+            OverpassService overpassService,
+            LocationService locationService) {
 
         this.pgRepository = pgRepository;
         this.overpassService = overpassService;
+        this.locationService = locationService;
     }
 
     // Add PG
@@ -60,7 +65,24 @@ public class PGService {
         pgRepository.deleteById(id);
     }
 
-    // Find nearby hostels using Overpass API
+    // Search and filter PGs
+    public List<PG> searchPG(
+            String city,
+            Double minRent,
+            Double maxRent,
+            String gender,
+            Integer minRooms) {
+
+        return pgRepository.searchPG(
+                city,
+                minRent,
+                maxRent,
+                gender,
+                minRooms
+        );
+    }
+
+    // Find nearby hostels using latitude and longitude
     public List<HostelDTO> findNearbyHostels(
             double latitude,
             double longitude,
@@ -69,6 +91,21 @@ public class PGService {
         return overpassService.findNearbyHostels(
                 latitude,
                 longitude,
+                radius
+        );
+    }
+
+    // Find nearby hostels based on college/university
+    public List<HostelDTO> findNearbyHostelsByInstitution(
+            String institution,
+            int radius) {
+
+        double[] location =
+                locationService.findInstitutionLocation(institution);
+
+        return overpassService.findNearbyHostels(
+                location[0],
+                location[1],
                 radius
         );
     }
