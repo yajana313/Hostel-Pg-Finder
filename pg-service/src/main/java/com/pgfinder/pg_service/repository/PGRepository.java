@@ -26,5 +26,5 @@ public interface PGRepository extends JpaRepository<PG, Long> {
             @Param("maxRent") Double maxRent,
             @Param("gender") String gender,
             @Param("minRooms") Integer minRooms
-    );
+   );
 }
