@@ -43,8 +43,36 @@ public class PGController {
                 radius
         );
     }
+    @GetMapping("/nearby-by-institution")
+public List<HostelDTO> findNearbyHostelsByInstitution(
+        @RequestParam String institution,
+        @RequestParam(defaultValue = "3000") int radius) {
+
+    return pgService.findNearbyHostelsByInstitution(
+            institution,
+            radius
+    );
+}
 
     // Get PG by ID
+
+    // Search and filter PGs
+@GetMapping("/search")
+public List<PG> searchPG(
+        @RequestParam(required = false) String city,
+        @RequestParam(required = false) Double minRent,
+        @RequestParam(required = false) Double maxRent,
+        @RequestParam(required = false) String gender,
+        @RequestParam(required = false) Integer minRooms) {
+
+    return pgService.searchPG(
+            city,
+            minRent,
+            maxRent,
+            gender,
+            minRooms
+    );
+}
     @GetMapping("/{id}")
     public ResponseEntity<PG> getPGById(@PathVariable Long id) {
         return pgService.getPGById(id)
