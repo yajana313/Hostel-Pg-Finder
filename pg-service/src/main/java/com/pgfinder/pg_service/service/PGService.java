@@ -56,6 +56,10 @@ public class PGService {
         existingPG.setGender(pg.getGender());
         existingPG.setDescription(pg.getDescription());
         existingPG.setAmenities(pg.getAmenities());
+        existingPG.setLatitude(pg.getLatitude());
+        existingPG.setLongitude(pg.getLongitude());
+        existingPG.setPhone(pg.getPhone());
+        existingPG.setType(pg.getType());
 
         return pgRepository.save(existingPG);
     }

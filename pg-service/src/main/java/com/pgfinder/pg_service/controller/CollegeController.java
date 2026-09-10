@@ -45,4 +45,21 @@ public class CollegeController {
     public College addCollege(@RequestBody College college) {
         return collegeService.addCollege(college);
     }
+        // Update college
+    @PutMapping("/{id}")
+    public College updateCollege(
+            @PathVariable Long id,
+            @RequestBody College college) {
+
+        return collegeService.updateCollege(id, college);
+    }
+
+    // Delete college
+    @DeleteMapping("/{id}")
+    public String deleteCollege(@PathVariable Long id) {
+
+        collegeService.deleteCollege(id);
+
+        return "College deleted successfully";
+    }
 }
