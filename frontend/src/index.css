@@ -1,10 +1,16 @@
 :root {
-  font-family: "DM Sans", Arial, sans-serif;
-  color: #172033;
-  background: #f3f1ed;
+  font-family: "Inter", "Poppins", Arial, sans-serif;
+  color: #101828;
+  background: #f3f8ff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html,
@@ -12,8 +18,18 @@ body,
 #root {
   margin: 0;
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
 }
