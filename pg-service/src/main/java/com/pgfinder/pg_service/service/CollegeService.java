@@ -39,4 +39,29 @@ public class CollegeService {
     public College getCollegeById(Long id) {
         return collegeRepository.findById(id).orElse(null);
     }
+        // Update college
+    public College updateCollege(Long id, College college) {
+
+        College existingCollege = collegeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("College not found"));
+
+        existingCollege.setName(college.getName());
+        existingCollege.setUniversity(college.getUniversity());
+        existingCollege.setAddress(college.getAddress());
+        existingCollege.setCity(college.getCity());
+        existingCollege.setLatitude(college.getLatitude());
+        existingCollege.setLongitude(college.getLongitude());
+
+        return collegeRepository.save(existingCollege);
+    }
+
+    // Delete college
+    public void deleteCollege(Long id) {
+
+        if (!collegeRepository.existsById(id)) {
+            throw new RuntimeException("College not found");
+        }
+
+        collegeRepository.deleteById(id);
+    }
 }

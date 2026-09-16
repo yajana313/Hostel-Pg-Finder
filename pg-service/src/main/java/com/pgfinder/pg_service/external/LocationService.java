@@ -1,66 +1,38 @@
 package com.pgfinder.pg_service.external;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pgfinder.pg_service.entity.College;
+import com.pgfinder.pg_service.repository.CollegeRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
 public class LocationService {
 
-    private final RestClient restClient;
-    private final ObjectMapper objectMapper;
+    private final CollegeRepository collegeRepository;
 
-    public LocationService() {
-        this.restClient = RestClient.builder()
-                .baseUrl("https://nominatim.openstreetmap.org")
-                .build();
-
-        this.objectMapper = new ObjectMapper();
+    public LocationService(CollegeRepository collegeRepository) {
+        this.collegeRepository = collegeRepository;
     }
 
     public double[] findInstitutionLocation(String institution) {
 
-        String response = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/search")
-                        .queryParam("q", institution + ", Ahmedabad")
-                        .queryParam("format", "json")
-                        .queryParam("limit", 1)
-                        .build())
-                .header("User-Agent", "Hostel-PG-Finder")
-                .retrieve()
-                .body(String.class);
+        College college = collegeRepository
+                .findFirstByNameContainingIgnoreCase(institution)
+                .orElseThrow(() -> new RuntimeException(
+                        "College not found in database: " + institution
+                ));
 
-        try {
-
-            JsonNode root = objectMapper.readTree(response);
-
-            if (!root.isArray() || root.isEmpty()) {
-                throw new RuntimeException(
-                        "Institution location not found: " + institution
-                );
-            }
-
-            JsonNode firstResult = root.get(0);
-
-            double latitude =
-                    firstResult.get("lat").asDouble();
-
-            double longitude =
-                    firstResult.get("lon").asDouble();
-
-            return new double[]{
-                    latitude,
-                    longitude
-            };
-
-        } catch (Exception e) {
+        if (college.getLatitude() == null
+                || college.getLongitude() == null) {
 
             throw new RuntimeException(
-                    "Unable to find institution location",
-                    e
+                    "Latitude or longitude not available for: "
+                            + college.getName()
             );
         }
+
+        return new double[]{
+                college.getLatitude(),
+                college.getLongitude()
+        };
     }
 }
