@@ -6,7 +6,12 @@ import Footer from "../components/Footer";
 import SearchBar from "../components/SearchBar";
 import PgGrid from "../components/PgGrid";
 
-import { getAllPGs, searchColleges, searchPGs } from "../api/client";
+import {
+  findNearbyHostelsByInstitution,
+  getAllPGs,
+  searchColleges,
+  searchPGs,
+} from "../api/client";
 import { distanceKm } from "../utils/distance";
 import { HOME_HERO_IMAGE } from "../constants/images";
 
@@ -22,6 +27,16 @@ import {
   ShieldIcon,
   SparkleIcon,
 } from "../components/icons";
+
+// Strips punctuation so "Samras Boys Hostel" and "Samras Boy's Hostel"
+// (same real place, spelled differently between our data and OSM) match.
+function normalizeName(name) {
+  return (name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function HomePage() {
   const [pgs, setPgs] = useState([]);
@@ -99,28 +114,72 @@ function HomePage() {
         }
 
         if (collegeData) {
-          results = results
-            .map((pg) => {
-              const distance = distanceKm(
+          const radiusKm = Number(distanceRadius);
+
+          // Registered PGs that already have coordinates saved
+          const nearbyOwnedPgs = results
+            .map((pg) => ({
+              ...pg,
+              distanceKm: distanceKm(
                 collegeData.latitude,
                 collegeData.longitude,
                 pg.latitude,
                 pg.longitude
-              );
-
-              return {
-                ...pg,
-                distanceKm: distance,
-              };
-            })
+              ),
+            }))
             .filter(
               (pg) =>
-                pg.distanceKm !== null &&
-                pg.distanceKm <= Number(distanceRadius)
-            )
-            .sort((a, b) => a.distanceKm - b.distanceKm);
+                pg.distanceKm !== null && pg.distanceKm <= radiusKm
+            );
+
+          // Live nearby hostels resolved from the college via OpenStreetMap
+          let nearbyOsmHostels = [];
+
+          // Skip OSM results that are really the same place as one we
+          // already have (e.g. "Samras Boys Hostel" vs "Samras Boy's Hostel")
+          const ownedNames = new Set(
+            nearbyOwnedPgs.map((pg) => normalizeName(pg.name))
+          );
+
+          try {
+            const hostels = await findNearbyHostelsByInstitution(
+              collegeData.name,
+              radiusKm * 1000
+            );
+
+            nearbyOsmHostels = hostels
+              .filter(
+                (hostel) => !ownedNames.has(normalizeName(hostel.name))
+              )
+              .map((hostel, index) => ({
+                id: `osm-${index}-${hostel.name}`,
+                name: hostel.name,
+                city: "Ahmedabad",
+                latitude: hostel.latitude,
+                longitude: hostel.longitude,
+                type: hostel.type,
+                distanceKm: distanceKm(
+                  collegeData.latitude,
+                  collegeData.longitude,
+                  hostel.latitude,
+                  hostel.longitude
+                ),
+              }));
+          } catch (osmError) {
+            console.error(osmError);
+          }
+
+          results = [...nearbyOwnedPgs, ...nearbyOsmHostels].sort(
+            (a, b) => a.distanceKm - b.distanceKm
+          );
 
           setSearchLabel(collegeName);
+
+          if (results.length === 0) {
+            setSearchNote(
+              `No PGs or hostels found within ${radiusKm} km of "${collegeName}".`
+            );
+          }
         } else {
           setSearchLabel("");
 

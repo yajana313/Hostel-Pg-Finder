@@ -19,7 +19,7 @@ const unsplash = (id, width = 1200) =>
 
 export const HOME_HERO_IMAGE =
   unsplash(
-    "1654063841940-76939eeb1c73",
+    "1768289269971-6171457bed13",
     1600
   );
 
@@ -53,12 +53,10 @@ export const REGISTER_SIDE_IMAGE =
 // PG CARD IMAGES
 // ======================================================
 
+// Only plain, empty room/interior photos - no people,
+// so a photo never visually clashes with a "For Boys" /
+// "For Girls" tag on a listing.
 export const ROOM_IMAGES = [
-
-  unsplash(
-    "1654063841940-76939eeb1c73",
-    800
-  ),
 
   unsplash(
     "1721742736249-144eb3893c71",
@@ -72,11 +70,6 @@ export const ROOM_IMAGES = [
 
   unsplash(
     "1768289269971-6171457bed13",
-    800
-  ),
-
-  unsplash(
-    "1640109414028-4c7f29f39ad4",
     800
   ),
 

@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pgs")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PGController {
 
     private final PGService pgService;
