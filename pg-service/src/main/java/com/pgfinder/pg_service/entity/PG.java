@@ -29,6 +29,14 @@ public class PG {
     // Additional information
     private String phone;
     private String type;
+    private String status;
+    public String getStatus() {
+    return status;
+}
+
+public void setStatus(String status) {
+    this.status = status;
+}
 
     public PG() {
     }

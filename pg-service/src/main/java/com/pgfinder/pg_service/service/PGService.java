@@ -28,14 +28,45 @@ public class PGService {
     }
 
     // Add PG
-    public PG addPG(PG pg) {
-        return pgRepository.save(pg);
-    }
+public PG addPG(PG pg) {
+
+    pg.setStatus("PENDING");
+
+    return pgRepository.save(pg);
+}
 
     // Get all PGs
     public List<PG> getAllPGs() {
         return pgRepository.findAll();
     }
+    public List<PG> getPendingPGs() {
+    return pgRepository.findByStatus("PENDING");
+}
+public List<PG> getApprovedPGs() {
+    return pgRepository.findByStatus("APPROVED");
+}
+
+public List<PG> getRejectedPGs() {
+    return pgRepository.findByStatus("REJECTED");
+}
+public PG approvePG(Long id) {
+
+    PG pg = pgRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PG not found"));
+
+    pg.setStatus("APPROVED");
+
+    return pgRepository.save(pg);
+}
+public PG rejectPG(Long id) {
+
+    PG pg = pgRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PG not found"));
+
+    pg.setStatus("REJECTED");
+
+    return pgRepository.save(pg);
+}
 
     // Get PG by ID
     public Optional<PG> getPGById(Long id) {

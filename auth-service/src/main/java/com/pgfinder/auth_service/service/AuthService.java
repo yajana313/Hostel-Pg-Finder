@@ -34,7 +34,13 @@ public class AuthService {
                 passwordEncoder.encode(request.getPassword())
         );
 
-        user.setRole(request.getRole());
+        String role = request.getRole();
+
+if (!role.equals("USER") && !role.equals("OWNER")) {
+    throw new RuntimeException("Invalid role");
+}
+
+user.setRole(role);
 
         return userRepository.save(user);
     }
