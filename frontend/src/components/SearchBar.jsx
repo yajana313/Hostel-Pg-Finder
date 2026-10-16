@@ -72,7 +72,7 @@ function SearchBar({ onSearch, loading }) {
     useState(RENT_RANGES[0]);
 
   const [distanceRadius, setDistanceRadius] =
-    useState("5");
+    useState("3");
 
   const [amenities, setAmenities] =
     useState([]);
@@ -511,7 +511,7 @@ function SearchBar({ onSearch, loading }) {
             `Within ${distanceRadius} km`
           }
           isActive={
-            distanceRadius !== "5"
+            distanceRadius !== "3"
           }
         >
 

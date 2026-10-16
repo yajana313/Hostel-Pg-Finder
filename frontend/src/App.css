@@ -738,7 +738,7 @@ h5 {
   box-shadow:
     0 15px 35px rgba(20, 60, 105, 0.15) !important;
 
-  z-index: 100 !important;
+  z-index: 130 !important;
 }
 
 .suggestion-list {

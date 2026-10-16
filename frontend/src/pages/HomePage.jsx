@@ -164,7 +164,14 @@ function HomePage() {
                   hostel.latitude,
                   hostel.longitude
                 ),
-              }));
+              }))
+              // Overpass's "around" filter matches if any part of a mapped
+              // area is within radius, so a large complex can still end up
+              // farther away than radiusKm once we measure to its center.
+              .filter(
+                (hostel) =>
+                  hostel.distanceKm !== null && hostel.distanceKm <= radiusKm
+              );
           } catch (osmError) {
             console.error(osmError);
           }

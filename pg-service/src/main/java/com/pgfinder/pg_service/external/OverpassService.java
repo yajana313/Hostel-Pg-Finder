@@ -125,11 +125,13 @@ public class OverpassService {
                 }
 
                 /*
-                 * Generic names remove
+                 * Generic / placeholder names remove.
+                 * OSM has many bare "Dormitory 12" style nodes with no
+                 * real rent or room data behind them, not actual PG listings.
                  */
                 if (lowerName.equals("hostel")
                         || lowerName.equals("unknown hostel")
-                        || lowerName.equals("dormitory")) {
+                        || lowerName.matches("dormitory\\s*\\d*")) {
 
                     continue;
                 }
