@@ -14,3 +14,4 @@ Thumbs.db
 
 # Local application configuration
 auth-service/src/main/resources/application.properties
+hs_err_pid*.log

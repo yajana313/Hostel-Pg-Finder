@@ -30,6 +30,27 @@ public class PGController {
     public List<PG> getAllPGs() {
         return pgService.getAllPGs();
     }
+    @GetMapping("/admin/pending")
+public ResponseEntity<List<PG>> getPendingPGs() {
+
+    List<PG> pendingPGs = pgService.getPendingPGs();
+
+    return ResponseEntity.ok(pendingPGs);
+}
+@PutMapping("/admin/approve/{id}")
+public ResponseEntity<PG> approvePG(@PathVariable Long id) {
+
+    PG approvedPG = pgService.approvePG(id);
+
+    return ResponseEntity.ok(approvedPG);
+}
+@PutMapping("/admin/reject/{id}")
+public ResponseEntity<PG> rejectPG(@PathVariable Long id) {
+
+    PG rejectedPG = pgService.rejectPG(id);
+
+    return ResponseEntity.ok(rejectedPG);
+}
 
     // Find nearby hostels
     @GetMapping("/nearby")

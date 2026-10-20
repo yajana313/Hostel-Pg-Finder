@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface PGRepository extends JpaRepository<PG, Long> {
+    List<PG> findByStatus(String status);
 
     // Search and filter PGs
     @Query("""
