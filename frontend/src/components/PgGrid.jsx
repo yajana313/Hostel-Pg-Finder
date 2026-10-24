@@ -13,6 +13,25 @@ import {
 import { roomImageFor } from "../constants/images";
 
 
+// ======================================================
+// GOOGLE MAPS LINK
+// Free "search" link — no API key, no billing involved.
+// ======================================================
+
+function mapUrlFor(pg) {
+
+  if (pg.latitude != null && pg.longitude != null) {
+    return `https://www.google.com/maps/search/?api=1&query=${pg.latitude},${pg.longitude}`;
+  }
+
+  const query = [pg.address, pg.city]
+    .filter(Boolean)
+    .join(", ") || pg.name || "Ahmedabad";
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+
 const FAVORITES_KEY =
   "campusnest_favorites";
 
@@ -497,7 +516,13 @@ function PgGrid({ pgs, loading }) {
 
             {/* ADDRESS */}
 
-            <p className="pg-location">
+            <a
+              className="pg-location pg-location-link"
+              href={mapUrlFor(active)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open in Google Maps"
+            >
 
               <MapPinIcon />
 
@@ -505,7 +530,7 @@ function PgGrid({ pgs, loading }) {
                 active.city ||
                 "Location unavailable"}
 
-            </p>
+            </a>
 
 
             {/* DETAILS */}

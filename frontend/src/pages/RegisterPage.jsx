@@ -62,7 +62,7 @@ function RegisterPage() {
     role:
       location.state?.role === "OWNER"
         ? "OWNER"
-        : "STUDENT",
+        : "USER",
 
   });
 
@@ -402,6 +402,8 @@ function RegisterPage() {
 
               placeholder="Create an 8-character password"
 
+              autoComplete="new-password"
+
               value={form.password}
 
               onChange={(event) =>
@@ -474,6 +476,8 @@ function RegisterPage() {
 
               placeholder="Confirm your password"
 
+              autoComplete="new-password"
+
               value={
                 form.confirmPassword
               }
@@ -513,7 +517,7 @@ function RegisterPage() {
 
               className={
                 form.role ===
-                "STUDENT"
+                "USER"
                   ? "role-toggle-active"
                   : ""
               }
@@ -521,7 +525,7 @@ function RegisterPage() {
               onClick={() =>
                 update(
                   "role",
-                  "STUDENT"
+                  "USER"
                 )
               }
             >

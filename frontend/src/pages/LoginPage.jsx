@@ -4,7 +4,7 @@ import AuthLayout from "../components/AuthLayout";
 import { login } from "../api/client";
 import { useAuth } from "../context/useAuth";
 import { LOGIN_SIDE_IMAGE } from "../constants/images";
-import { EyeIcon, EyeOffIcon, GoogleIcon, LockIcon, MailIcon, PhoneIcon } from "../components/icons";
+import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "../components/icons";
 
 function LoginPage() {
   const { setUser } = useAuth();
@@ -16,7 +16,6 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [forgotNote, setForgotNote] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +56,12 @@ function LoginPage() {
       {location.state?.registered && !error && (
         <div className="alert alert-success">Registration successful! Please login to continue.</div>
       )}
+      {location.state?.passwordReset && !error && (
+        <div className="alert alert-success">Password reset successful! Please login with your new password.</div>
+      )}
+      {location.state?.requireAuth && !error && (
+        <div className="alert alert-error">Please login or register to search for PGs/hostels.</div>
+      )}
       {error && <div className="alert alert-error">{error}</div>}
 
       <form onSubmit={handleSubmit}>
@@ -80,6 +85,7 @@ function LoginPage() {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
+              autoComplete="current-password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
@@ -99,33 +105,14 @@ function LoginPage() {
             <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
             Remember me
           </label>
-          <button type="button" className="link-btn" onClick={() => setForgotNote((v) => !v)}>
+          <Link to="/forgot-password" className="link-btn">
             Forgot password?
-          </button>
+          </Link>
         </div>
-
-        {forgotNote && (
-          <p className="field-hint forgot-note">
-            Password reset isn't available yet — please contact your PG owner or admin for help.
-          </p>
-        )}
 
         <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
           {loading ? "Logging In…" : "Login"}
         </button>
-
-        <div className="divider-with-text">
-          <span>Or continue with</span>
-        </div>
-
-        <div className="social-login-row">
-          <button type="button" className="btn btn-outline" disabled title="Coming soon">
-            <GoogleIcon /> Continue with Google
-          </button>
-          <button type="button" className="btn btn-outline" disabled title="Coming soon">
-            <PhoneIcon /> Continue with Phone
-          </button>
-        </div>
 
         <p className="switch-form">
           Don't have an account? <Link to="/register">Register</Link>

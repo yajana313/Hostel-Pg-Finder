@@ -35,8 +35,15 @@ export function AuthProvider({ children }) {
 
   const logout = () => setUser(null);
 
+  // Patches the signed-in user (e.g. after a profile edit) without
+  // disturbing which storage ("remember me" or not) is in use.
+  const updateUser = (patch) => {
+    const remember = !!localStorage.getItem(STORAGE_KEY);
+    setUser({ ...user, ...patch }, remember);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, setUser, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

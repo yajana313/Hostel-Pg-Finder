@@ -1,11 +1,14 @@
 package com.pgfinder.auth_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -26,6 +29,11 @@ public class User {
 
     @Column(nullable = false)
     private String role;
+
+    @Column(unique = true)
+    private String resetToken;
+
+    private LocalDateTime resetTokenExpiry;
 
     public User() {
     }
@@ -61,6 +69,7 @@ public class User {
         this.email = email;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -75,5 +84,23 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    @JsonIgnore
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
+    @JsonIgnore
+    public LocalDateTime getResetTokenExpiry() {
+        return resetTokenExpiry;
+    }
+
+    public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
+        this.resetTokenExpiry = resetTokenExpiry;
     }
 }

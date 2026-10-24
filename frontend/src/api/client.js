@@ -49,6 +49,62 @@ export async function register({ name, email, password, role }) {
   return response.json();
 }
 
+export async function updateProfile(id, { name, email }) {
+  const response = await fetch(`${AUTH_API}/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Unable to update profile."));
+  }
+
+  return response.json();
+}
+
+export async function changePassword(id, { currentPassword, newPassword }) {
+  const response = await fetch(`${AUTH_API}/users/${id}/password`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Unable to change password."));
+  }
+
+  return response.json();
+}
+
+export async function forgotPassword(email) {
+  const response = await fetch(`${AUTH_API}/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Unable to send reset email."));
+  }
+
+  return response.json();
+}
+
+export async function resetPassword(token, newPassword) {
+  const response = await fetch(`${AUTH_API}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Unable to reset password."));
+  }
+
+  return response.json();
+}
+
 export async function getAllPGs() {
   const response = await fetch(PG_API);
   if (!response.ok) throw new Error("Unable to load PG listings.");

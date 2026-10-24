@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -12,6 +12,7 @@ import {
   searchColleges,
   searchPGs,
 } from "../api/client";
+import { useAuth } from "../context/useAuth";
 import { distanceKm } from "../utils/distance";
 import { HOME_HERO_IMAGE } from "../constants/images";
 
@@ -39,6 +40,9 @@ function normalizeName(name) {
 }
 
 function HomePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [pgs, setPgs] = useState([]);
   const [pgLoading, setPgLoading] = useState(true);
 
@@ -76,6 +80,11 @@ function HomePage() {
     distanceRadius,
     amenities,
   }) => {
+    if (!user) {
+      navigate("/login", { state: { requireAuth: true } });
+      return;
+    }
+
     setPgLoading(true);
     setSearchNote("");
 
@@ -130,6 +139,15 @@ function HomePage() {
             .filter(
               (pg) =>
                 pg.distanceKm !== null && pg.distanceKm <= radiusKm
+            )
+            // A college's own hostel (e.g. "LD College Boys Hostel") only
+            // takes that college's students, even if another college is
+            // nearby — hide it unless it's the searched college.
+            .filter(
+              (pg) =>
+                !pg.restrictedToCollege ||
+                normalizeName(pg.restrictedToCollege) ===
+                  normalizeName(collegeData.name)
             );
 
           // Live nearby hostels resolved from the college via OpenStreetMap

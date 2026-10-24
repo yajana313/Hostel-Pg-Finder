@@ -3,7 +3,9 @@ package com.pgfinder.pg_service.external;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pgfinder.pg_service.dto.HostelDTO;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -22,20 +24,32 @@ public class OverpassService {
 
     public OverpassService() {
 
+        SimpleClientHttpRequestFactory requestFactory =
+                new SimpleClientHttpRequestFactory();
+
+        // Public Overpass instance can be slow/overloaded; fail fast
+        // instead of leaving a search hanging for a long time.
+        requestFactory.setConnectTimeout(5_000);
+        requestFactory.setReadTimeout(10_000);
+
         this.restClient = RestClient.builder()
                 .baseUrl("https://overpass-api.de")
+                .requestFactory(requestFactory)
                 .build();
 
         this.objectMapper = new ObjectMapper();
     }
 
+    // Cached so repeat searches for the same college (e.g. "Gujarat
+    // University") don't re-hit the slow public Overpass API every time.
+    @Cacheable(value = "nearbyHostels", key = "#latitude + ',' + #longitude + ',' + #radius")
     public List<HostelDTO> findNearbyHostels(
             double latitude,
             double longitude,
             int radius) {
 
         String query = """
-                [out:json][timeout:60];
+                [out:json][timeout:10];
 
                 (
                     nwr["tourism"="hostel"]["name"]

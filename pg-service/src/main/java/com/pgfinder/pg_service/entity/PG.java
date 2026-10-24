@@ -30,6 +30,10 @@ public class PG {
     private String phone;
     private String type;
     private String status;
+
+    // Set only for hostels run by a specific college for its own students
+    // (e.g. "LD College of Engineering"); null means open to any nearby student.
+    private String restrictedToCollege;
     public String getStatus() {
     return status;
 }
@@ -143,5 +147,13 @@ public void setStatus(String status) {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getRestrictedToCollege() {
+        return restrictedToCollege;
+    }
+
+    public void setRestrictedToCollege(String restrictedToCollege) {
+        this.restrictedToCollege = restrictedToCollege;
     }
 }

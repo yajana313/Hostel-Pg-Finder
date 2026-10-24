@@ -36,7 +36,7 @@ function Navbar({ minimal = false }) {
         <div className="site-header-actions">
           {user ? (
             <>
-              <div className="user-chip">
+              <Link to="/profile" className="user-chip">
                 <span className="user-avatar">
                   {(user.name || "U").charAt(0).toUpperCase()}
                 </span>
@@ -44,7 +44,7 @@ function Navbar({ minimal = false }) {
                   <strong>{user.name || "User"}</strong>
                   <small>{user.role === "OWNER" ? "PG Owner" : "Student"}</small>
                 </span>
-              </div>
+              </Link>
               <button className="btn btn-outline btn-sm" onClick={handleLogout}>
                 <LogoutIcon /> Log Out
               </button>
