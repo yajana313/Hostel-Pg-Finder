@@ -358,7 +358,7 @@ function PgGrid({ pgs, loading }) {
                 </p>
 
 
-                {/* RENT + ROOMS */}
+                {/* RENT */}
 
                 <div className="pg-details">
 
@@ -370,20 +370,6 @@ function PgGrid({ pgs, loading }) {
 
                     <strong>
                       ₹{pg.rent ?? "N/A"}
-                    </strong>
-
-                  </div>
-
-
-                  <div>
-
-                    <span>
-                      Available Rooms
-                    </span>
-
-                    <strong>
-                      {pg.availableRooms ??
-                        "N/A"}
                     </strong>
 
                   </div>
@@ -545,20 +531,6 @@ function PgGrid({ pgs, loading }) {
 
                 <strong>
                   ₹{active.rent ??
-                    "N/A"}
-                </strong>
-
-              </div>
-
-
-              <div>
-
-                <span>
-                  Available Rooms
-                </span>
-
-                <strong>
-                  {active.availableRooms ??
                     "N/A"}
                 </strong>
 

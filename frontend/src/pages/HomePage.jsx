@@ -211,6 +211,10 @@ function HomePage() {
           setSearchNote(
             `We couldn't find "${collegeName}" in our college list.`
           );
+
+          // Distance is meaningless without a resolved college - don't
+          // fall back to showing the full unfiltered list.
+          results = [];
         }
       } else {
         setSearchLabel("");

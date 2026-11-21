@@ -20,9 +20,22 @@ public class CollegeService {
         return collegeRepository.findAll();
     }
 
+    // Strip everything but letters/digits so "HL College" still matches
+    // "H.L. College of Commerce" - users type abbreviations without the dots.
+    private static String normalize(String value) {
+        return value == null
+                ? ""
+                : value.toLowerCase().replaceAll("[^a-z0-9]", "");
+    }
+
     // Search by college/university name
     public List<College> searchColleges(String name) {
-        return collegeRepository.findByNameContainingIgnoreCase(name);
+
+        String needle = normalize(name);
+
+        return collegeRepository.findAll().stream()
+                .filter(college -> normalize(college.getName()).contains(needle))
+                .toList();
     }
 
     // Search colleges by university

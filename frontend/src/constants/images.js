@@ -83,6 +83,42 @@ export const ROOM_IMAGES = [
     800
   ),
 
+  // Simple single bed + desk, plain walls.
+  unsplash(
+    "1697899131342-2f311347f1c5",
+    800
+  ),
+
+  // Attic single room, bed + small desk + window.
+  unsplash(
+    "1768080315797-892a70ce05ee",
+    800
+  ),
+
+  // Plain desk/monitor setup, visible cables, blinds.
+  unsplash(
+    "1599502452586-113783ca7d82",
+    800
+  ),
+
+  // Shared room, metal bunk beds.
+  unsplash(
+    "1555854877-bab0e564b8d5",
+    800
+  ),
+
+  // Shared room, wooden bunk beds.
+  unsplash(
+    "1709805619372-40de3f158e83",
+    800
+  ),
+
+  // Single bed, plain mattress, no decor.
+  unsplash(
+    "1549881567-c622c1080d78",
+    800
+  ),
+
 ];
 
 
