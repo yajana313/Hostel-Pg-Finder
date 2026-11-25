@@ -27,10 +27,10 @@ public class PGController {
     }
 
     // Get all PGs
-    @GetMapping
-    public List<PG> getAllPGs() {
-        return pgService.getAllPGs();
-    }
+  @GetMapping
+public List<PG> getAllPGs() {
+    return pgService.getApprovedPGs();
+}
 
     // Get pending PGs for admin
     @GetMapping("/admin/pending")
