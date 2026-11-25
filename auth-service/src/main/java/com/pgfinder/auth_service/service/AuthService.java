@@ -1,9 +1,11 @@
 package com.pgfinder.auth_service.service;
 
+import com.pgfinder.auth_service.dto.AuthResponse;
 import com.pgfinder.auth_service.dto.LoginRequest;
 import com.pgfinder.auth_service.dto.RegisterRequest;
 import com.pgfinder.auth_service.entity.User;
 import com.pgfinder.auth_service.repository.UserRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +18,21 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       EmailService emailService) {
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService,
+            JwtService jwtService) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.jwtService = jwtService;
     }
 
+    // Register new user
     public User register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -32,26 +40,18 @@ public class AuthService {
         }
 
         User user = new User();
-
         user.setName(request.getName());
         user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        user.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
-
-        String role = request.getRole();
-
-if (!role.equals("USER") && !role.equals("OWNER")) {
-    throw new RuntimeException("Invalid role");
-}
-
-user.setRole(role);
+        // Public registrationમાં user પોતાનો role નક્કી કરી શકે નહીં
+        user.setRole("USER");
 
         return userRepository.save(user);
     }
 
-    public User login(LoginRequest request) {
+    // Login existing user and generate JWT
+    public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
@@ -60,12 +60,20 @@ user.setRole(role);
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
-                user.getPassword()
-        )) {
+                user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
-        return user;
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                user.getRole()
+        );
+
+        return new AuthResponse(
+                token,
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
     public User updateProfile(Long id, String name, String email) {
@@ -95,12 +103,17 @@ user.setRole(role);
         return userRepository.save(user);
     }
 
-    public void changePassword(Long id, String currentPassword, String newPassword) {
+    public void changePassword(
+            Long id,
+            String currentPassword,
+            String newPassword) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+        if (!passwordEncoder.matches(
+                currentPassword,
+                user.getPassword())) {
             throw new RuntimeException("Current password is incorrect");
         }
 
@@ -111,25 +124,29 @@ user.setRole(role);
 
     public void forgotPassword(String email) {
 
-        // Silently no-op for unknown emails so this endpoint can't be used
-        // to probe which addresses are registered.
+        // Unknown email માટે કોઈ action નહીં, જેથી registered emails
+        // જાણી શકાય નહીં.
         userRepository.findByEmail(email).ifPresent(user -> {
 
             String token = UUID.randomUUID().toString();
 
             user.setResetToken(token);
-            user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));
+            user.setResetTokenExpiry(
+                    LocalDateTime.now().plusMinutes(30));
 
             userRepository.save(user);
 
-            emailService.sendPasswordResetEmail(user.getEmail(), token);
+            emailService.sendPasswordResetEmail(
+                    user.getEmail(),
+                    token);
         });
     }
 
     public void resetPassword(String token, String newPassword) {
 
         User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired reset link"));
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid or expired reset link"));
 
         if (user.getResetTokenExpiry() == null
                 || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {

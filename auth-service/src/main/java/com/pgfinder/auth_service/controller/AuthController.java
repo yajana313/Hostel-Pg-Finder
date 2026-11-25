@@ -1,5 +1,7 @@
 package com.pgfinder.auth_service.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
+import com.pgfinder.auth_service.dto.AuthResponse;
 import com.pgfinder.auth_service.dto.ChangePasswordRequest;
 import com.pgfinder.auth_service.dto.ForgotPasswordRequest;
 import com.pgfinder.auth_service.dto.LoginRequest;
@@ -32,21 +33,21 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(
+    public ResponseEntity<String> register(
             @RequestBody RegisterRequest request) {
 
-        User user = authService.register(request);
+        authService.register(request);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok("Registration successful");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(
+    public ResponseEntity<AuthResponse> login(
             @RequestBody LoginRequest request) {
 
-        User user = authService.login(request);
+        AuthResponse response = authService.login(request);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/users/{id}")
@@ -87,6 +88,6 @@ public class AuthController {
 
         authService.resetPassword(request.getToken(), request.getNewPassword());
 
-        return ResponseEntity.ok(Map.of("message", "Password reset successfully."));
+        return ResponseEntity.ok("Password reset successfully.");
     }
 }
