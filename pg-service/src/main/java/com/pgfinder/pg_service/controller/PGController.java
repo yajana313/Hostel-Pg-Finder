@@ -3,6 +3,7 @@ package com.pgfinder.pg_service.controller;
 import com.pgfinder.pg_service.entity.PG;
 import com.pgfinder.pg_service.service.PGService;
 import com.pgfinder.pg_service.dto.HostelDTO;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,29 +31,41 @@ public class PGController {
     public List<PG> getAllPGs() {
         return pgService.getAllPGs();
     }
+
+    // Get pending PGs for admin
     @GetMapping("/admin/pending")
-public ResponseEntity<List<PG>> getPendingPGs() {
+    public ResponseEntity<List<PG>> getPendingPGs() {
+        List<PG> pendingPGs = pgService.getPendingPGs();
+        return ResponseEntity.ok(pendingPGs);
+    }
 
-    List<PG> pendingPGs = pgService.getPendingPGs();
+    // Approve PG
+    @PutMapping("/admin/approve/{id}")
+    public ResponseEntity<PG> approvePG(@PathVariable Long id) {
+        PG approvedPG = pgService.approvePG(id);
+        return ResponseEntity.ok(approvedPG);
+    }
 
-    return ResponseEntity.ok(pendingPGs);
-}
-@PutMapping("/admin/approve/{id}")
-public ResponseEntity<PG> approvePG(@PathVariable Long id) {
+    // Reject PG
+    @PutMapping("/admin/reject/{id}")
+    public ResponseEntity<PG> rejectPG(@PathVariable Long id) {
+        PG rejectedPG = pgService.rejectPG(id);
+        return ResponseEntity.ok(rejectedPG);
+    }
 
-    PG approvedPG = pgService.approvePG(id);
+    // Get approved PGs for admin
+    @GetMapping("/admin/approved")
+    public ResponseEntity<List<PG>> getApprovedPGs() {
+        return ResponseEntity.ok(pgService.getApprovedPGs());
+    }
 
-    return ResponseEntity.ok(approvedPG);
-}
-@PutMapping("/admin/reject/{id}")
-public ResponseEntity<PG> rejectPG(@PathVariable Long id) {
+    // Get rejected PGs for admin
+    @GetMapping("/admin/rejected")
+    public ResponseEntity<List<PG>> getRejectedPGs() {
+        return ResponseEntity.ok(pgService.getRejectedPGs());
+    }
 
-    PG rejectedPG = pgService.rejectPG(id);
-
-    return ResponseEntity.ok(rejectedPG);
-}
-
-    // Find nearby hostels
+    // Find nearby hostels using latitude and longitude
     @GetMapping("/nearby")
     public List<HostelDTO> findNearbyHostels(
             @RequestParam double latitude,
@@ -65,36 +78,38 @@ public ResponseEntity<PG> rejectPG(@PathVariable Long id) {
                 radius
         );
     }
+
+    // Find nearby hostels based on college/university
     @GetMapping("/nearby-by-institution")
-public List<HostelDTO> findNearbyHostelsByInstitution(
-        @RequestParam String institution,
-        @RequestParam(defaultValue = "3000") int radius) {
+    public List<HostelDTO> findNearbyHostelsByInstitution(
+            @RequestParam String institution,
+            @RequestParam(defaultValue = "3000") int radius) {
 
-    return pgService.findNearbyHostelsByInstitution(
-            institution,
-            radius
-    );
-}
-
-    // Get PG by ID
+        return pgService.findNearbyHostelsByInstitution(
+                institution,
+                radius
+        );
+    }
 
     // Search and filter PGs
-@GetMapping("/search")
-public List<PG> searchPG(
-        @RequestParam(required = false) String city,
-        @RequestParam(required = false) Double minRent,
-        @RequestParam(required = false) Double maxRent,
-        @RequestParam(required = false) String gender,
-        @RequestParam(required = false) Integer minRooms) {
+    @GetMapping("/search")
+    public List<PG> searchPG(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) Double minRent,
+            @RequestParam(required = false) Double maxRent,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) Integer minRooms) {
 
-    return pgService.searchPG(
-            city,
-            minRent,
-            maxRent,
-            gender,
-            minRooms
-    );
-}
+        return pgService.searchPG(
+                city,
+                minRent,
+                maxRent,
+                gender,
+                minRooms
+        );
+    }
+
+    // Get PG by ID
     @GetMapping("/{id}")
     public ResponseEntity<PG> getPGById(@PathVariable Long id) {
         return pgService.getPGById(id)
