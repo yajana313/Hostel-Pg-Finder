@@ -4,10 +4,13 @@ import com.pgfinder.auth_service.dto.LoginRequest;
 import com.pgfinder.auth_service.dto.RegisterRequest;
 import com.pgfinder.auth_service.entity.User;
 import com.pgfinder.auth_service.repository.UserRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -17,64 +20,101 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       EmailService emailService) {
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
     }
 
+    // REGISTER
+    @Transactional
     public User register(RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (request == null) {
+            throw new RuntimeException("Registration details are required");
+        }
+
+        String name = request.getName() == null
+                ? ""
+                : request.getName().trim();
+
+        String email = normalizeEmail(request.getEmail());
+
+        String password = request.getPassword();
+
+        String role = request.getRole() == null
+                ? ""
+                : request.getRole().trim().toUpperCase(Locale.ROOT);
+
+        if (name.isEmpty()) {
+            throw new RuntimeException("Name is required");
+        }
+
+        if (email.isEmpty()) {
+            throw new RuntimeException("Email is required");
+        }
+
+        if (password == null || password.isBlank()) {
+            throw new RuntimeException("Password is required");
+        }
+
+        if (!role.equals("USER") && !role.equals("OWNER")) {
+            throw new RuntimeException("Invalid role");
+        }
+
+        if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already registered");
         }
 
         User user = new User();
-
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-
-        user.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
-
-        String role = request.getRole();
-
-if (!role.equals("USER") && !role.equals("OWNER")) {
-    throw new RuntimeException("Invalid role");
-}
-
-user.setRole(role);
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(role);
 
         return userRepository.save(user);
     }
 
+    // LOGIN
+    @Transactional(readOnly = true)
     public User login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
+        if (request == null) {
+            throw new RuntimeException("Login details are required");
+        }
+
+        String email = normalizeEmail(request.getEmail());
+        String password = request.getPassword();
+
+        if (email.isEmpty() || password == null || password.isBlank()) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new RuntimeException("Invalid email or password")
                 );
 
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword()
-        )) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
         return user;
     }
 
+    // UPDATE PROFILE
+    @Transactional
     public User updateProfile(Long id, String name, String email) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String trimmedName = name == null ? "" : name.trim();
-        String trimmedEmail = email == null ? "" : email.trim();
+        String trimmedEmail = normalizeEmail(email);
 
         if (trimmedName.isEmpty()) {
             throw new RuntimeException("Name is required");
@@ -95,44 +135,86 @@ user.setRole(role);
         return userRepository.save(user);
     }
 
-    public void changePassword(Long id, String currentPassword, String newPassword) {
+    // CHANGE PASSWORD
+    @Transactional
+    public void changePassword(
+            Long id,
+            String currentPassword,
+            String newPassword) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+        if (currentPassword == null
+                || currentPassword.isBlank()
+                || !passwordEncoder.matches(
+                        currentPassword,
+                        user.getPassword())) {
             throw new RuntimeException("Current password is incorrect");
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new RuntimeException("New password is required");
+        }
 
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new RuntimeException(
+                    "New password must be different from current password"
+            );
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 
+    // FORGOT PASSWORD
+    @Transactional
     public void forgotPassword(String email) {
 
-        // Silently no-op for unknown emails so this endpoint can't be used
-        // to probe which addresses are registered.
-        userRepository.findByEmail(email).ifPresent(user -> {
+        String normalizedEmail = normalizeEmail(email);
+
+        // Do not reveal whether an email is registered.
+        if (normalizedEmail.isEmpty()) {
+            return;
+        }
+
+        userRepository.findByEmail(normalizedEmail).ifPresent(user -> {
 
             String token = UUID.randomUUID().toString();
 
             user.setResetToken(token);
-            user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));
+            user.setResetTokenExpiry(
+                    LocalDateTime.now().plusMinutes(30)
+            );
 
             userRepository.save(user);
 
-            emailService.sendPasswordResetEmail(user.getEmail(), token);
+            emailService.sendPasswordResetEmail(
+                    user.getEmail(),
+                    token
+            );
         });
     }
 
+    // RESET PASSWORD
+    @Transactional
     public void resetPassword(String token, String newPassword) {
 
-        User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired reset link"));
+        if (token == null || token.isBlank()) {
+            throw new RuntimeException("Invalid or expired reset link");
+        }
+
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new RuntimeException("New password is required");
+        }
+
+        User user = userRepository.findByResetToken(token.trim())
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid or expired reset link")
+                );
 
         if (user.getResetTokenExpiry() == null
-                || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+                || !user.getResetTokenExpiry().isAfter(LocalDateTime.now())) {
             throw new RuntimeException("Invalid or expired reset link");
         }
 
@@ -141,5 +223,11 @@ user.setRole(role);
         user.setResetTokenExpiry(null);
 
         userRepository.save(user);
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null
+                ? ""
+                : email.trim().toLowerCase(Locale.ROOT);
     }
 }

@@ -2,7 +2,9 @@ package com.pgfinder.auth_service.service;
 
 import com.pgfinder.auth_service.entity.User;
 import com.pgfinder.auth_service.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,28 +17,37 @@ public class AdminService {
         this.userRepository = userRepository;
     }
 
+    // Get all registered users
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+    // Get total USER count
+    @Transactional(readOnly = true)
     public long getUserCount() {
-    return userRepository.findAll()
-            .stream()
-            .filter(user -> "USER".equalsIgnoreCase(user.getRole()))
-            .count();
-}
-
-public long getOwnerCount() {
-    return userRepository.findAll()
-            .stream()
-            .filter(user -> "OWNER".equalsIgnoreCase(user.getRole()))
-            .count();
-}
-public void deleteUser(Long id) {
-
-    if (!userRepository.existsById(id)) {
-        throw new RuntimeException("User not found");
+        return userRepository.countByRoleIgnoreCase("USER");
     }
 
-    userRepository.deleteById(id);
-}
+    // Get total OWNER count
+    @Transactional(readOnly = true)
+    public long getOwnerCount() {
+        return userRepository.countByRoleIgnoreCase("OWNER");
+    }
+
+    // Delete user by ID
+    @Transactional
+    public void deleteUser(Long id) {
+
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid user ID");
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        userRepository.delete(user);
+    }
 }
