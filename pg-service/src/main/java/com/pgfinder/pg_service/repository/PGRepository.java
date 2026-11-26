@@ -11,11 +11,13 @@ import java.util.List;
 @Repository
 public interface PGRepository extends JpaRepository<PG, Long> {
     List<PG> findByStatus(String status);
+    List<PG> findByOwnerEmail(String ownerEmail);
 
     // Search and filter PGs
     @Query("""
         SELECT p FROM PG p
-        WHERE (:city IS NULL OR LOWER(p.city) = LOWER(:city))
+        WHERE p.status = 'APPROVED'
+        AND (:city IS NULL OR LOWER(p.city) = LOWER(:city))
         AND (:minRent IS NULL OR p.rent >= :minRent)
         AND (:maxRent IS NULL OR p.rent <= :maxRent)
         AND (:gender IS NULL OR LOWER(p.gender) = LOWER(:gender))

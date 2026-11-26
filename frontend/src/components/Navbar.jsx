@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-import { LogoutIcon, UserIcon } from "./icons";
+import { BriefcaseIcon, LogoutIcon, ShieldIcon, UserIcon } from "./icons";
 import Logo from "./Logo";
 
 function Navbar({ minimal = false }) {
@@ -36,15 +36,34 @@ function Navbar({ minimal = false }) {
         <div className="site-header-actions">
           {user ? (
             <>
-              <Link to="/profile" className="user-chip">
-                <span className="user-avatar">
-                  {(user.name || "U").charAt(0).toUpperCase()}
-                </span>
-                <span className="user-chip-text">
-                  <strong>{user.name || "User"}</strong>
-                  <small>{user.role === "OWNER" ? "PG Owner" : "Student"}</small>
-                </span>
-              </Link>
+              {user.role === "ADMIN" ? (
+                <Link to="/admin" className="user-chip">
+                  <span className="user-avatar user-avatar-admin">
+                    <ShieldIcon />
+                  </span>
+                  <span className="user-chip-text">
+                    <strong>Admin Panel</strong>
+                    <small>Manage CampusNest</small>
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  {user.role === "OWNER" && (
+                    <Link to="/owner" className="btn btn-outline btn-sm">
+                      <BriefcaseIcon /> My Listings
+                    </Link>
+                  )}
+                  <Link to="/profile" className="user-chip">
+                    <span className="user-avatar">
+                      {(user.name || "U").charAt(0).toUpperCase()}
+                    </span>
+                    <span className="user-chip-text">
+                      <strong>{user.name || "User"}</strong>
+                      <small>{user.role === "OWNER" ? "PG Owner" : "Student"}</small>
+                    </span>
+                  </Link>
+                </>
+              )}
               <button className="btn btn-outline btn-sm" onClick={handleLogout}>
                 <LogoutIcon /> Log Out
               </button>

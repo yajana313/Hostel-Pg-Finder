@@ -88,6 +88,6 @@ public class AuthController {
 
         authService.resetPassword(request.getToken(), request.getNewPassword());
 
-        return ResponseEntity.ok("Password reset successfully.");
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully."));
     }
 }

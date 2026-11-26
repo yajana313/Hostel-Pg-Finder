@@ -1,8 +1,13 @@
 // Central place for every backend call the UI makes.
 // Base URLs match the existing services — nothing here changes the backend.
 const AUTH_API = "http://localhost:8081/api/auth";
+const ADMIN_API = "http://localhost:8081/api/admin";
 const PG_API = "http://localhost:8082/api/pgs";
 const COLLEGE_API = "http://localhost:8082/api/colleges";
+
+function authHeaders(token) {
+  return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+}
 
 async function readErrorMessage(response, fallback) {
   try {
@@ -46,7 +51,8 @@ export async function register({ name, email, password, role }) {
     throw new Error(await readErrorMessage(response, "Registration failed."));
   }
 
-  return response.json();
+  // The backend returns a plain confirmation string, not JSON — nothing to parse.
+  return true;
 }
 
 export async function updateProfile(id, { name, email }) {
@@ -135,6 +141,125 @@ export async function searchColleges(name) {
   if (!response.ok) return [];
   const data = await response.json();
   return Array.isArray(data) ? data : [];
+}
+
+// --------------------------------------------------
+// ADMIN
+// --------------------------------------------------
+
+export async function getAdminUsers(token) {
+  const response = await fetch(`${ADMIN_API}/users`, { headers: authHeaders(token) });
+  if (!response.ok) throw new Error(await readErrorMessage(response, "Unable to load users."));
+  return response.json();
+}
+
+export async function deleteAdminUser(token, id) {
+  const response = await fetch(`${ADMIN_API}/users/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error(await readErrorMessage(response, "Unable to delete user."));
+  // The backend returns a plain confirmation string, not JSON — nothing to parse.
+  return true;
+}
+
+export async function getPendingPGs(token) {
+  const response = await fetch(`${PG_API}/admin/pending`, { headers: authHeaders(token) });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to load pending listings."));
+  return response.json();
+}
+
+export async function getApprovedPGsAdmin(token) {
+  const response = await fetch(`${PG_API}/admin/approved`, { headers: authHeaders(token) });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to load approved listings."));
+  return response.json();
+}
+
+export async function getRejectedPGsAdmin(token) {
+  const response = await fetch(`${PG_API}/admin/rejected`, { headers: authHeaders(token) });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to load rejected listings."));
+  return response.json();
+}
+
+export async function approvePGAdmin(token, id) {
+  const response = await fetch(`${PG_API}/admin/approve/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+  });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to approve this listing."));
+  return response.json();
+}
+
+export async function rejectPGAdmin(token, id) {
+  const response = await fetch(`${PG_API}/admin/reject/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+  });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to reject this listing."));
+  return response.json();
+}
+
+export async function addPGAdmin(token, pg) {
+  const response = await fetch(`${PG_API}/admin/add`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(pg),
+  });
+  if (!response.ok) throw new Error(await readErrorMessage(response, "Unable to add this PG."));
+  return response.json();
+}
+
+export async function deletePGAdmin(token, id) {
+  const response = await fetch(`${PG_API}/admin/delete/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to delete this listing."));
+  return true;
+}
+
+export async function getMyPGs(token) {
+  const response = await fetch(`${PG_API}/owner/mine`, { headers: authHeaders(token) });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to load your listings."));
+  return response.json();
+}
+
+export async function addOwnerPG(token, pg) {
+  const response = await fetch(`${PG_API}/owner/add`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(pg),
+  });
+  if (!response.ok) throw new Error(await readErrorMessage(response, "Unable to add this PG."));
+  return response.json();
+}
+
+export async function updateOwnerPG(token, id, pg) {
+  const response = await fetch(`${PG_API}/owner/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+    body: JSON.stringify(pg),
+  });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to update this listing."));
+  return response.json();
+}
+
+export async function deleteOwnerPG(token, id) {
+  const response = await fetch(`${PG_API}/owner/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok)
+    throw new Error(await readErrorMessage(response, "Unable to delete this listing."));
+  return true;
 }
 
 export async function findNearbyHostelsByInstitution(institution, radiusMeters) {

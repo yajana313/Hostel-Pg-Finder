@@ -5,6 +5,7 @@ import com.pgfinder.pg_service.service.PGService;
 import com.pgfinder.pg_service.dto.HostelDTO;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,6 +64,46 @@ public class PGController {
     @GetMapping("/admin/rejected")
     public ResponseEntity<List<PG>> getRejectedPGs() {
         return ResponseEntity.ok(pgService.getRejectedPGs());
+    }
+
+    // Admin: add a PG directly (goes live immediately, no review needed)
+    @PostMapping("/admin/add")
+    public PG addPGAsAdmin(@RequestBody PG pg) {
+        return pgService.addPGApproved(pg);
+    }
+
+    // Admin: permanently delete a PG
+    @DeleteMapping("/admin/delete/{id}")
+    public ResponseEntity<String> deletePGAsAdmin(@PathVariable Long id) {
+        pgService.deletePG(id);
+        return ResponseEntity.ok("PG deleted successfully");
+    }
+
+    // Owner: list only the PGs this owner has listed
+    @GetMapping("/owner/mine")
+    public ResponseEntity<List<PG>> getMyPGs(Authentication authentication) {
+        return ResponseEntity.ok(pgService.getPGsByOwner(authentication.getName()));
+    }
+
+    // Owner: add a new PG under their own account (goes to review first)
+    @PostMapping("/owner/add")
+    public PG addPGAsOwner(@RequestBody PG pg, Authentication authentication) {
+        return pgService.addPGForOwner(pg, authentication.getName());
+    }
+
+    // Owner: edit one of their own PGs (re-enters review)
+    @PutMapping("/owner/{id}")
+    public PG updatePGAsOwner(
+            @PathVariable Long id, @RequestBody PG pg, Authentication authentication) {
+        return pgService.updatePGForOwner(id, pg, authentication.getName());
+    }
+
+    // Owner: delete one of their own PGs
+    @DeleteMapping("/owner/{id}")
+    public ResponseEntity<String> deletePGAsOwner(
+            @PathVariable Long id, Authentication authentication) {
+        pgService.deletePGForOwner(id, authentication.getName());
+        return ResponseEntity.ok("PG deleted successfully");
     }
 
     // Find nearby hostels using latitude and longitude

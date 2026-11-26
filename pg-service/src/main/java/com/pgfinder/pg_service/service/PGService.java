@@ -5,7 +5,9 @@ import com.pgfinder.pg_service.repository.PGRepository;
 import com.pgfinder.pg_service.external.OverpassService;
 import com.pgfinder.pg_service.external.LocationService;
 import com.pgfinder.pg_service.dto.HostelDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +37,74 @@ public PG addPG(PG pg) {
     return pgRepository.save(pg);
 }
 
-    // Get all PGs
+    // Admin: add a PG that's already approved (no review needed)
+    public PG addPGApproved(PG pg) {
+
+        pg.setStatus("APPROVED");
+
+        return pgRepository.save(pg);
+    }
+
+    // Owner: list only the PGs this owner has listed, whatever their status
+    public List<PG> getPGsByOwner(String ownerEmail) {
+        return pgRepository.findByOwnerEmail(ownerEmail);
+    }
+
+    // Owner: add a new PG under their own account — always goes to review first
+    public PG addPGForOwner(PG pg, String ownerEmail) {
+
+        pg.setOwnerEmail(ownerEmail);
+        pg.setStatus("PENDING");
+
+        return pgRepository.save(pg);
+    }
+
+    // Owner: edit one of their own PGs. Re-enters review since the content changed.
+    public PG updatePGForOwner(Long id, PG pg, String ownerEmail) {
+
+        PG existingPG = requireOwnedPG(id, ownerEmail);
+
+        existingPG.setName(pg.getName());
+        existingPG.setAddress(pg.getAddress());
+        existingPG.setCity(pg.getCity());
+        existingPG.setRent(pg.getRent());
+        existingPG.setAvailableRooms(pg.getAvailableRooms());
+        existingPG.setGender(pg.getGender());
+        existingPG.setDescription(pg.getDescription());
+        existingPG.setAmenities(pg.getAmenities());
+        existingPG.setLatitude(pg.getLatitude());
+        existingPG.setLongitude(pg.getLongitude());
+        existingPG.setPhone(pg.getPhone());
+        existingPG.setType(pg.getType());
+        existingPG.setStatus("PENDING");
+
+        return pgRepository.save(existingPG);
+    }
+
+    // Owner: delete one of their own PGs
+    public void deletePGForOwner(Long id, String ownerEmail) {
+
+        requireOwnedPG(id, ownerEmail);
+
+        pgRepository.deleteById(id);
+    }
+
+    private PG requireOwnedPG(Long id, String ownerEmail) {
+
+        PG pg = pgRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("PG not found"));
+
+        if (!ownerEmail.equalsIgnoreCase(pg.getOwnerEmail())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "You can only manage your own listings");
+        }
+
+        return pg;
+    }
+
+    // Get all publicly visible (approved) PGs
     public List<PG> getAllPGs() {
-        return pgRepository.findAll();
+        return pgRepository.findByStatus("APPROVED");
     }
     public List<PG> getPendingPGs() {
     return pgRepository.findByStatus("PENDING");

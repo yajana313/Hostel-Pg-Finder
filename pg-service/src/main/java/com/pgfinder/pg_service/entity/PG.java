@@ -34,6 +34,19 @@ public class PG {
     // Set only for hostels run by a specific college for its own students
     // (e.g. "LD College of Engineering"); null means open to any nearby student.
     private String restrictedToCollege;
+
+    // Email of the owner account that listed this PG. Null for PGs added
+    // directly by an admin (no specific owner to attribute them to).
+    private String ownerEmail;
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
+
     public String getStatus() {
     return status;
 }

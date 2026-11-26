@@ -1,5 +1,6 @@
 package com.pgfinder.auth_service.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.io.Decoders;
@@ -32,5 +33,13 @@ public class JwtService {
                 .expiration(Date.from(now.plus(24, ChronoUnit.HOURS)))
                 .signWith(key)
                 .compact();
+    }
+
+    public Claims parseToken(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

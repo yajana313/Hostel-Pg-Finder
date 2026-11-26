@@ -44,8 +44,8 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // Public registrationમાં user પોતાનો role નક્કી કરી શકે નહીં
-        user.setRole("USER");
+        // Public registration can only create USER or OWNER accounts — never ADMIN.
+        user.setRole("OWNER".equalsIgnoreCase(request.getRole()) ? "OWNER" : "USER");
 
         return userRepository.save(user);
     }
@@ -70,6 +70,8 @@ public class AuthService {
         );
 
         return new AuthResponse(
+                user.getId(),
+                user.getName(),
                 token,
                 user.getEmail(),
                 user.getRole()

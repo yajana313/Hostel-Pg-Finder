@@ -6,6 +6,8 @@ import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import AdminPage from "./pages/AdminPage";
+import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import "./App.css";
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/owner" element={<OwnerDashboardPage />} />
       </Routes>
     </AuthProvider>
   );
